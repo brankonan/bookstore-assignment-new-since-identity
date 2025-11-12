@@ -54,7 +54,7 @@ namespace BookstoreApplication.Services.Auth
             if (!ok)
                 throw new ArgumentException("Invalid credentials.");
 
-            return await GenerateJwtAsync(user);
+            return await GenerateJwtForUser(user);
         }
 
         public async Task<ProfileDto> GetProfileAsync(ClaimsPrincipal userPrincipal)
@@ -77,25 +77,19 @@ namespace BookstoreApplication.Services.Auth
             };
         }
 
-        private async Task<string> GenerateJwtAsync(ApplicationUser user)
+        public async Task<string> GenerateJwtForUser(ApplicationUser user)
         {
-            var roles = await _userManager.GetRolesAsync(user);
-
             var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim("username", user.UserName ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+        new Claim("username", user.UserName ?? user.Email ?? ""),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+            var roles = await _userManager.GetRolesAsync(user);
+            claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
@@ -103,8 +97,8 @@ namespace BookstoreApplication.Services.Auth
                 expires: DateTime.UtcNow.AddDays(1),
                 signingCredentials: creds
             );
-
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }
