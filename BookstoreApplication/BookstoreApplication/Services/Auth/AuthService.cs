@@ -20,7 +20,6 @@ namespace BookstoreApplication.Services.Auth
 
         public async Task RegisterAsync(RegistrationDto data)
         {
-            // provere za email/username
             if (await _userManager.FindByEmailAsync(data.Email) is not null)
                 throw new ArgumentException("Email already in use.");
 
@@ -42,6 +41,7 @@ namespace BookstoreApplication.Services.Auth
                 var msg = string.Join("; ", result.Errors.Select(e => e.Description));
                 throw new ArgumentException(msg);
             }
+            await _userManager.AddToRoleAsync(user, "Bibliotekar");
         }
 
         public async Task<string> LoginAsync(LoginDto data)

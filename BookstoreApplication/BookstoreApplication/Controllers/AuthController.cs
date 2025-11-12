@@ -13,6 +13,7 @@ namespace BookstoreApplication.Controllers
 
         public AuthController(IAuthService auth) => _auth = auth;
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegistrationDto dto)
         {
@@ -29,6 +30,7 @@ namespace BookstoreApplication.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
@@ -45,7 +47,7 @@ namespace BookstoreApplication.Controllers
             }
         }
 
-        [Authorize]
+        [Authorize(Policy = "ReadProfile")]
         [HttpGet("profile")]
         public async Task<IActionResult> Profile()
         {

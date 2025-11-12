@@ -60,7 +60,14 @@ builder.Services.AddAuthentication(options =>
             RoleClaimType = ClaimTypes.Role
         };
     });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CreateBooks", p => p.RequireAuthenticatedUser());
+
+    options.AddPolicy("EditBooks", p => p.RequireRole("Urednik"));
+
+    options.AddPolicy("ReadProfile", p => p.RequireAuthenticatedUser());
+});
 
 // MVC kontroleri
 builder.Services.AddControllers();
@@ -112,6 +119,11 @@ builder.Services.AddScoped<IBookRepository, BookRepository>();
 // Auth servis
 builder.Services.AddScoped<IAuthService, AuthService>();
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedData.InitializeAsync(services);
+}
 
 if (app.Environment.IsDevelopment())
 {

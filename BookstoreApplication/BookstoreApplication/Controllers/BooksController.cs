@@ -1,6 +1,7 @@
 ﻿using BookstoreApplication.Models;
 using Microsoft.AspNetCore.Mvc;
 using BookstoreApplication.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,18 +23,20 @@ namespace BookstoreApplication.Controllers
         }
 
         // GET: api/books
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll()
             => Ok(await _books.GetAllWithIncludesAsync());
 
         // GET api/books/5
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetOne(int id)
         {
             var book = await _books.GetOneWithIncludesAsync(id);
             return book is null ? NotFound() : Ok(book);
         }
-
+        [Authorize(Policy = "CreateBooks")]
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Book dto)
         {
@@ -50,6 +53,7 @@ namespace BookstoreApplication.Controllers
             return CreatedAtAction(nameof(GetOne), new { id = created.Id }, withRefs);
         }
 
+        [Authorize(Policy = "EditBooks")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Book dto)
         {
@@ -65,6 +69,7 @@ namespace BookstoreApplication.Controllers
             return Ok(withRefs);
         }
 
+        [Authorize(Policy = "EditBooks")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

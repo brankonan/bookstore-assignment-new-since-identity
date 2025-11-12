@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 
 
@@ -81,6 +82,11 @@ namespace BookstoreApplication.Models
                     .HasForeignKey(b => b.PublisherId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+            // Seed IdentityRole
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole { Name = "Bibliotekar", NormalizedName = "BIBLIOTEKAR" },
+                new IdentityRole { Name = "Urednik", NormalizedName = "UREDNIK" }
+            );
             // === SEED PODACI (v3) ===
             modelBuilder.Entity<Publisher>().HasData(
                 new Publisher { Id = 1, Name = "Penguin Books", Address = "80 Strand, London", Website = "https://penguin.co.uk" },
