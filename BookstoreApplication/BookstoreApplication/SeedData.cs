@@ -7,14 +7,12 @@ public class SeedData
     {
         var roleManager = sp.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = sp.GetRequiredService<UserManager<ApplicationUser>>();
-
-        // Osiguraj da postoje role (za slucaj da pokreces bez migracija)
+      
         if (!await roleManager.RoleExistsAsync("Bibliotekar"))
             await roleManager.CreateAsync(new IdentityRole("Bibliotekar"));
         if (!await roleManager.RoleExistsAsync("Urednik"))
             await roleManager.CreateAsync(new IdentityRole("Urednik"));
 
-        // 3 urednika
         await EnsureEditorAsync(userManager, "john", "john@example.com", "John", "Doe");
         await EnsureEditorAsync(userManager, "jane", "jane@example.com", "Jane", "Doe");
         await EnsureEditorAsync(userManager, "nick", "nick@example.com", "Nick", "Smith");
@@ -34,7 +32,6 @@ public class SeedData
                 Surname = surname,
                 EmailConfirmed = true
             };
-            // demo sifra sa velikim/malim/brojem/spec
             await um.CreateAsync(user, "Passw0rd!");
         }
         if (!await um.IsInRoleAsync(user, "Urednik"))
