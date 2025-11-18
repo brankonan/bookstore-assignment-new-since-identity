@@ -7,7 +7,7 @@ using BookstoreApplication.Services;
 namespace BookstoreApplication.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/reviews")]
     public class ReviewsController : ControllerBase
     {
         private readonly ReviewService _service;
