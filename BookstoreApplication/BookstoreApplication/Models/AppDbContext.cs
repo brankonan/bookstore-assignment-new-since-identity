@@ -15,6 +15,8 @@ namespace BookstoreApplication.Models
         public DbSet<Award> Awards { get; set; }
         public DbSet<AuthorAward> AuthorAwards { get; set; }
 
+        public DbSet<Review> Reviews { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -48,6 +50,8 @@ namespace BookstoreApplication.Models
                 cfg.Property(a => a.DateOfBirth)
                     .HasColumnName("Birthday")
                     .HasColumnType("date");
+
+                cfg.HasIndex(a => a.FullName);
             });
 
             modelBuilder.Entity<AuthorAward>(cfg =>
@@ -82,6 +86,12 @@ namespace BookstoreApplication.Models
                     .HasForeignKey(b => b.PublisherId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<Review>()
+                    .HasOne(r => r.Book)
+                    .WithMany(b => b.Reviews)
+                    .HasForeignKey(r => r.BookId)
+                    .OnDelete(DeleteBehavior.Cascade);
             // Seed IdentityRole
             modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole { Name = "Bibliotekar", NormalizedName = "BIBLIOTEKAR" },

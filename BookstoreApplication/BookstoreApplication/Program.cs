@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
+using BookstoreApplication.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -115,9 +116,15 @@ builder.Services.AddScoped<IPublisherRepository, PublisherRepository>();
 builder.Services.AddScoped<IAwardRepository, AwardRepository>();
 builder.Services.AddScoped<IBookRepository, BookRepository>();
 
+//UOW i Review repo
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 
 // Auth servis
 builder.Services.AddScoped<IAuthService, AuthService>();
+//Review servisi
+builder.Services.AddScoped<ReviewService>();
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {

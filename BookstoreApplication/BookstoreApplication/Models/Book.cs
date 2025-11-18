@@ -13,5 +13,7 @@
 
         public int PublisherId { get; set; }
         public Publisher? Publisher { get; set; }
+        public double AverageRating { get; set; } = 0;
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }
