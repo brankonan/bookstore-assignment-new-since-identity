@@ -27,17 +27,14 @@ namespace BookstoreApplication.Services
             if (dto.ComicVineIssueId == 0)
                 throw new ArgumentException("ComicVineIssueId is required", nameof(dto.ComicVineIssueId));
 
-            // 1) Da li vec postoji lokalno izdanje za taj ComicVine ID?
             if (await _comicIssueRepository.ExistsByComicVineIdAsync(dto.ComicVineIssueId))
                 throw new InvalidOperationException("Lokalno izdanje vec postoji za dati ComicVine ID.");
 
-            // 2) Dohvati izdanje sa ComicVine API-ja
             var external = await _comicVineService.GetSingleIssueAsync(dto.ComicVineIssueId);
 
             if (external == null)
                 throw new InvalidOperationException("Ne postoji izdanje na ComicVine API za zadati ID.");
 
-            // 3) Kreiraj entitet koji ce se cuvati u bazi
             var entity = new ComicIssue
             {
                 ComicVineIssueId = external.Id,
@@ -52,11 +49,9 @@ namespace BookstoreApplication.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            // 4) Cuvanje
             await _comicIssueRepository.AddAsync(entity);
             await _unitOfWork.SaveAsync();
 
-            // 5) Mapiranje u DTO za response
             return new LocalComicIssueDetails
             {
                 Id = entity.Id,

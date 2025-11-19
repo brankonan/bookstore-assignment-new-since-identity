@@ -58,7 +58,6 @@ namespace BookstoreApplication.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                // Mozes granularno: conflict vs not found, ali drzim jednostavno
                 if (ex.Message.Contains("vec postoji"))
                     return Conflict(ex.Message);
 
