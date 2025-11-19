@@ -2,23 +2,45 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using BookstoreApplication.Models;
+using BookstoreApplication.DTOs;
 
-namespace BookstoreApplication.Repositories
+namespace BookstoreApplication.Repositories.Comics;
+
+public class ComicIssueRepository : IComicIssueRepository
 {
-    public class ComicIssueRepository : Repository<ComicIssue>, IComicIssueRepository
+    private readonly AppDbContext _db;
+
+    public ComicIssueRepository(AppDbContext db)
     {
-        public ComicIssueRepository(AppDbContext db) : base(db)
-        {
-        }
+        _db = db;
+    }
 
-        public Task<bool> ExistsByComicVineIdAsync(int comicVineIssueId)
-        {
-            return _set.AnyAsync(ci => ci.ComicVineIssueId == comicVineIssueId);
-        }
+    public Task<bool> ExistsByExternalIdAsync(int comicVineIssueId)
+    {
+        return _db.ComicIssues.AnyAsync(ci => ci.ComicVineIssueId == comicVineIssueId);
+    }
 
-        public override Task<List<ComicIssue>> GetAllAsync(bool asNoTracking = true)
+    public async Task<LocalComicIssueDetails> InsertAsync(LocalComicIssueDetails issue)
+    {
+        var entity = new ComicIssue
         {
-            return base.GetAllAsync(asNoTracking);
-        }
+            ComicVineIssueId = issue.ComicVineIssueId,
+            Name = issue.Name,
+            Description = issue.Description,
+            CoverUrl = issue.CoverUrl,
+            ReleaseDate = issue.ReleaseDate,
+            IssueNumber = issue.IssueNumber,
+            PageCount = issue.PageCount,
+            Price = issue.Price,
+            Stock = issue.Stock,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _db.ComicIssues.Add(entity);
+        await _db.SaveChangesAsync();
+
+        issue.Id = entity.Id;
+        return issue;
     }
 }
+

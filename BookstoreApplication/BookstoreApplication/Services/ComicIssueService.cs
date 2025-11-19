@@ -1,41 +1,37 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BookstoreApplication.DTOs;
-using BookstoreApplication.Models;
-using BookstoreApplication.Repositories;
+using BookstoreApplication.Repositories.Comics;
 
-namespace BookstoreApplication.Services
+namespace BookstoreApplication.Services.Comics
 {
     public class ComicIssueService : IComicIssueService
     {
         private readonly ComicVineService _comicVineService;
-        private readonly IComicIssueRepository _comicIssueRepository;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IComicIssueRepository _repo;
 
         public ComicIssueService(
             ComicVineService comicVineService,
-            IComicIssueRepository comicIssueRepository,
-            IUnitOfWork unitOfWork)
+            IComicIssueRepository repo)
         {
             _comicVineService = comicVineService;
-            _comicIssueRepository = comicIssueRepository;
-            _unitOfWork = unitOfWork;
+            _repo = repo;
         }
 
         public async Task<LocalComicIssueDetails> CreateLocalIssueAsync(SaveIssueDto dto)
         {
             if (dto.ComicVineIssueId == 0)
-                throw new ArgumentException("ComicVineIssueId is required", nameof(dto.ComicVineIssueId));
+                throw new ArgumentException("Nedostaje eksterni ComicVine Issue ID.");
 
-            if (await _comicIssueRepository.ExistsByComicVineIdAsync(dto.ComicVineIssueId))
+            if (await _repo.ExistsByExternalIdAsync(dto.ComicVineIssueId))
                 throw new InvalidOperationException("Lokalno izdanje vec postoji za dati ComicVine ID.");
 
             var external = await _comicVineService.GetSingleIssueAsync(dto.ComicVineIssueId);
-
             if (external == null)
                 throw new InvalidOperationException("Ne postoji izdanje na ComicVine API za zadati ID.");
 
-            var entity = new ComicIssue
+            var now = DateTime.UtcNow;
+            var local = new LocalComicIssueDetails
             {
                 ComicVineIssueId = external.Id,
                 Name = external.Name,
@@ -46,26 +42,12 @@ namespace BookstoreApplication.Services
                 PageCount = external.PageCount,
                 Price = dto.Price,
                 Stock = dto.Stock,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = now
             };
 
-            await _comicIssueRepository.AddAsync(entity);
-            await _unitOfWork.SaveAsync();
-
-            return new LocalComicIssueDetails
-            {
-                Id = entity.Id,
-                ComicVineIssueId = entity.ComicVineIssueId,
-                Name = entity.Name,
-                Description = entity.Description,
-                CoverUrl = entity.CoverUrl,
-                ReleaseDate = entity.ReleaseDate,
-                IssueNumber = entity.IssueNumber,
-                PageCount = entity.PageCount,
-                Price = entity.Price,
-                Stock = entity.Stock,
-                CreatedAt = entity.CreatedAt
-            };
+            var saved = await _repo.InsertAsync(local);
+            return saved;
         }
     }
 }
+

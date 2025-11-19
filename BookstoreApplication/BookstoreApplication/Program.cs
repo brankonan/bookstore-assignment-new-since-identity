@@ -12,6 +12,14 @@ using System.Security.Claims;
 using System.Text;
 using BookstoreApplication.Services;
 
+//Mongo
+using MongoDB.Driver;
+using Microsoft.Extensions.Options;
+using BookstoreApplication.Config;
+using BookstoreApplication.Repositories.Comics;
+using BookstoreApplication.Services.Comics;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // EF Core + Npgsql
@@ -125,10 +133,27 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 //Review servisi
 builder.Services.AddScoped<ReviewService>();
 
-//Comic
+//Comic repi + servisi
 builder.Services.AddHttpClient<ComicVineService>();
-builder.Services.AddScoped<IComicIssueRepository, ComicIssueRepository>();
+builder.Services.AddScoped<IComicIssueRepository, ComicNoSqlRepository>();
 builder.Services.AddScoped<IComicIssueService, ComicIssueService>();
+
+//MongoDB config
+builder.Services.Configure<MongoSettings>(
+    builder.Configuration.GetSection("MongoSettings"));
+
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
+    return new MongoClient(settings.ConnectionString);
+});
+
+builder.Services.AddScoped<IMongoDatabase>(sp =>
+{
+    var settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
+    var client = sp.GetRequiredService<IMongoClient>();
+    return client.GetDatabase(settings.DatabaseName);
+});
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
