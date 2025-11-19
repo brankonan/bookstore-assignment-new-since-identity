@@ -17,6 +17,8 @@ namespace BookstoreApplication.Models
 
         public DbSet<Review> Reviews { get; set; }
 
+        public DbSet<ComicIssue> ComicIssues { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

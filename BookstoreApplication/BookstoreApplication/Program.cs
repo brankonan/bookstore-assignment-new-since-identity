@@ -125,6 +125,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 //Review servisi
 builder.Services.AddScoped<ReviewService>();
 
+//Comic
+builder.Services.AddHttpClient<ComicVineService>();
+builder.Services.AddScoped<IComicIssueRepository, ComicIssueRepository>();
+builder.Services.AddScoped<IComicIssueService, ComicIssueService>();
+
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
